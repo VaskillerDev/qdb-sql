@@ -73,9 +73,11 @@ impl Rule {
         'a: for operator in operators {
             match split_on_data_type_and_operator(raw_expression, operator) {
                 Some(ref val) => {
+                    let val_for_lterm = &val.get(0).expect("left terminal not found");
+                    let val_for_rterm = &val.get(1).expect("right terminal not found");
                     binary_expression = Some(BinaryExpr::new(
-                        create_data_type(&val[0]).unwrap(),
-                        create_data_type(&val[1]).unwrap(),
+                        create_data_type(val_for_lterm).unwrap(),
+                        create_data_type(val_for_rterm).unwrap(),
                         operator.to_string(),
                     ));
                     break 'a;
@@ -94,8 +96,11 @@ impl Rule {
     // help to split string value to data var
     fn split_statement(raw_statement: &str) -> Option<DataVar> {
         let val: Vec<&str> = raw_statement.splitn(2, ":").collect();
-        let type_and_value: Vec<&str> = val[1].split("=").collect();
-
+        let type_and_value: Vec<&str> = val
+            .get(1)
+            .expect("type and value not found")
+            .split("=")
+            .collect();
         let symbol = val.get(0);
         let raw_type = type_and_value.get(0);
         let value = type_and_value.get(1);
@@ -118,8 +123,9 @@ impl Rule {
             let (symbol, raw_type) = (symbol.unwrap(), raw_type.unwrap());
             let data_type = DataType::from_type_default_value(raw_type).expect(
                 format!(
-                    "DataType creation has been failed at {}.\n value: {} type: {}",
-                    symbol, type_and_value[0], type_and_value[0]
+                    "DataType creation has been failed at {}.\n value and type: {} ",
+                    symbol,
+                    type_and_value.get(0).expect("type and value not found"),
                 )
                 .as_str(),
             );
@@ -212,7 +218,11 @@ pub trait Parser {
         let mut unary_func_expressions: Vec<UnaryFuncExpr> = vec![];
 
         for argument_subgroups in argument_groups {
-            let func_type = Rule::get_func_type(&argument_subgroups[0].to_string())
+            let argument_subgroups_maybe_func_type = &argument_subgroups
+                .get(0)
+                .expect("func subgroups not found")
+                .to_string();
+            let func_type = Rule::get_func_type(argument_subgroups_maybe_func_type)
                 .expect("function type not found");
             let channels = argument_subgroups
                 .get(1)
@@ -274,12 +284,11 @@ pub trait Parser {
 
 pub struct DefaultParser;
 impl DefaultParser {
-
     /// Parse raw string as AST-tree with callback
     /// ```
     /// use crate::qdb_ast::parser::states::DefaultParser;
     ///
-    /// DefaultParser::from_unary_func_expr_callback("onUpdate(my_channel)(a >= 2)(a : int, b : text)",|elem| elem);
+    /// DefaultParser::parse_from_string_callback("onUpdate(my_channel)(a >= 2)(a : int, b : text)",|elem| elem);
     /// ```
     pub fn parse_from_string_callback<
         T: Into<String>,
@@ -301,7 +310,7 @@ impl DefaultParser {
     /// let query = String::from("onUpdate(my_channel)(a >= 2)(a : int, b : text)");
     /// DefaultParser::parse_from_string(query);
     /// ```
-    pub fn parse_from_string(line : String) -> Vec<UnaryFuncExpr> {
+    pub fn parse_from_string(line: String) -> Vec<UnaryFuncExpr> {
         let line: String = line.into();
         Self::from_unary_func_expr(line).expect("parser from string error")
     }
@@ -393,6 +402,6 @@ mod test {
         //println!("{}",c);
         let query = String::from("onUpdate(my_channel)(a >= 2)(a : int, b : text)");
         let a = DefaultParser::parse_from_string(query);
-        println!("{:?}",a);
+        println!("{:?}", a);
     }
 }

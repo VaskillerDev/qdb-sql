@@ -303,7 +303,7 @@ impl DefaultParser {
         closure(result)
     }
 
-    /// Parse raw string as AST-tree
+    /// Parse raw string as AST-tree and implement as UnaryFuncExpr
     /// ```
     /// use crate::qdb_ast::parser::states::DefaultParser;
     ///
@@ -378,18 +378,15 @@ mod test {
             )
         );
 
+        let a = DefaultParser::parse_from_string("onCreate(my_channel)(a : int)".to_lowercase());
+        println!("{:?}", a);
+
         Ok(())
     }
 
     #[test]
     fn test_from_unary_func_expr_callback() -> Result<(), ()> {
-        /*        let a = DefaultParser::from_unary_func_expr_callback(
-            "onUpdate(my_channel)(x>=2)(a:int,b:real)",
-            |elem| {
-                //println!("{:?}", elem);
-                elem
-            },
-        );*/
+        let a = DefaultParser::from_unary_func_expr("onUpdate(my_channel)(x>=2)(a:int,b:real)");
         Ok(())
     }
 

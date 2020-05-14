@@ -1,5 +1,8 @@
 //! The describe all types for ast.
 use crate::ast::types::FuncType::{OnCreate, OnDelete, OnRead, OnUpdate};
+use std::cmp::Ordering;
+use std::cmp::Ordering::{Less, Equal};
+use crate::ast::types::DataType::{Bool, Null, Real, Int, Text, Symbol};
 
 #[derive(Debug, PartialEq, PartialOrd)]
 // data types
@@ -17,6 +20,12 @@ pub enum DataType {
     Text(String),
     // shadow value
     Symbol(String),
+}
+
+impl Ord for DataType {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.partial_cmp(other).unwrap()
+    }
 }
 
 impl DataType {
@@ -98,7 +107,13 @@ impl DataType {
     }
 }
 
-#[derive(Debug)]
+impl Eq for DataType {
+    fn assert_receiver_is_total_eq(&self) {
+        panic!("Assert receiver is total eq")
+    }
+}
+
+#[derive(Debug,PartialEq,PartialOrd)]
 // data variable - composition from data types
 // example: <variable name> = 23 : int
 pub struct DataVar(String, DataType);
@@ -106,6 +121,18 @@ pub struct DataVar(String, DataType);
 impl DataVar {
     pub fn new(var_name: String, data_type: DataType) -> DataVar {
         DataVar(var_name, data_type)
+    }
+}
+
+impl Ord for DataVar {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.partial_cmp(other).unwrap()
+    }
+}
+
+impl Eq for DataVar {
+    fn assert_receiver_is_total_eq(&self) {
+        panic!("Assert receiver is total eq")
     }
 }
 
@@ -281,7 +308,7 @@ impl BinaryExpr {
 #[cfg(test)]
 // test module
 mod test {
-    use crate::ast::types::{BinaryExpr, DataType};
+    use crate::ast::types::{BinaryExpr, DataType, DataVar};
     use crate::ast::util::Util;
 
     #[test]
@@ -313,6 +340,13 @@ mod test {
         DataType::from_string("tru", "bool");
 
         Ok(())
+    }
+
+    #[test]
+    fn test_ordering_data_type() {
+        let a = DataVar("a".to_string(),DataType::Null);
+        let b = DataVar("b".to_string(),DataType::Null);
+        println!("{:?}",a.cmp(&b));
     }
 
     #[test]

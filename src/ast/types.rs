@@ -122,6 +122,10 @@ impl DataVar {
     pub fn new(var_name: String, data_type: DataType) -> DataVar {
         DataVar(var_name, data_type)
     }
+    pub fn get(&self) -> (&String,&DataType){
+        let DataVar(name,val) = self;
+        (name,val)
+    }
 }
 
 impl Ord for DataVar {
@@ -347,6 +351,15 @@ mod test {
         let a = DataVar("a".to_string(),DataType::Null);
         let b = DataVar("b".to_string(),DataType::Null);
         println!("{:?}",a.cmp(&b));
+    }
+
+    #[test]
+    fn test_data_var_get() -> Result<(),()> {
+        let data_var = DataVar("my_var".to_string(),DataType::Real(32.2));
+        let (name,value) = data_var.get();
+        debug_assert_eq!("my_var",name);
+        debug_assert_eq!(DataType::Real(32.2),*value);
+        Ok(())
     }
 
     #[test]

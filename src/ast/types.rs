@@ -4,7 +4,7 @@ use std::cmp::Ordering;
 use std::cmp::Ordering::{Less, Equal};
 use crate::ast::types::DataType::{Bool, Null, Real, Int, Text, Symbol};
 
-#[derive(Debug, PartialEq, PartialOrd)]
+#[derive(Debug, PartialEq, PartialOrd,Clone)]
 // data types
 // example: 23 : int
 pub enum DataType {
@@ -351,6 +351,12 @@ mod test {
         let a = DataVar("a".to_string(),DataType::Null);
         let b = DataVar("b".to_string(),DataType::Null);
         println!("{:?}",a.cmp(&b));
+    }
+
+    #[test]
+    fn test_data_type_clone() {
+        let a = &DataType::Bool(true);
+        let b = a.clone();
     }
 
     #[test]

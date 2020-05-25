@@ -267,13 +267,17 @@ impl std::fmt::Display for UnaryFuncExpr {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug,Clone)]
 // expressions for left-hand and right-hand data types
 pub struct BinaryExpr(DataType, DataType, String);
 
 impl BinaryExpr {
     pub fn new(lterm: DataType, rterm: DataType, operator: String) -> BinaryExpr {
         BinaryExpr(lterm, rterm, operator)
+    }
+
+    pub fn get(&self) -> (&DataType,&DataType,&str) {
+        return (&self.0,&self.1,&self.2)
     }
 
     fn eq(&self) -> bool {
@@ -458,5 +462,11 @@ mod test {
         );
 
         Ok(())
+    }
+
+    #[test]
+    fn test_binary_expr_get() {
+        let binary_expr = BinaryExpr::new(DataType::Symbol("S".to_string()),DataType::Int(32),"==".to_string());
+        println!("{:#?}",binary_expr.get())
     }
 }

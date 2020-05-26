@@ -105,6 +105,18 @@ impl DataType {
     pub fn from_text(val: String) -> DataType {
         DataType::Text(val)
     }
+
+    pub fn compare_with(&self,other: &Self) -> Option<Ordering> {
+        let combination = (self,other);
+        return match combination  {
+            (DataType::Null,DataType::Null) => Some(Ordering::Equal),
+            (DataType::Bool(l_val),DataType::Bool(r_val)) => l_val.partial_cmp(r_val),
+            (DataType::Int(l_val),DataType::Int(r_val)) => l_val.partial_cmp(r_val),
+            (DataType::Real(l_val),DataType::Real(r_val)) => l_val.partial_cmp(r_val),
+            (DataType::Text(l_val),DataType::Text(r_val)) => l_val.partial_cmp(r_val),
+            _ => None
+        }
+    }
 }
 
 impl Eq for DataType {
@@ -318,6 +330,7 @@ impl BinaryExpr {
 mod test {
     use crate::ast::types::{BinaryExpr, DataType, DataVar};
     use crate::ast::util::Util;
+    use std::cmp::Ordering;
 
     #[test]
     fn test_data_type_from_string() -> Result<(), ()> {
@@ -345,15 +358,15 @@ mod test {
             DataType::Text("my test text".to_string()),
             DataType::from_string("my test text", "text").unwrap()
         );
-        DataType::from_string("tru", "bool");
+        DataType::from_string("tru", "bool"); // todo: continue
 
         Ok(())
     }
 
     #[test]
     fn test_ordering_data_type() {
-        let a = DataVar("a".to_string(),DataType::Null);
-        let b = DataVar("b".to_string(),DataType::Null);
+        let a = DataType::Text("0".to_string());
+        let b = DataType::Int(0);
         println!("{:?}",a.cmp(&b));
     }
 
@@ -361,6 +374,19 @@ mod test {
     fn test_data_type_clone() {
         let a = &DataType::Bool(true);
         let b = a.clone();
+    }
+
+    #[test]
+    fn test_data_type_compare_with() {
+        let data_type_a = DataType::Int(32);
+        let data_type_b = DataType::Int(64);
+        let data_type_c = DataType::Real(32.0);
+        let data_type_d = DataType::Text("my test text".to_string());
+        let data_type_e = DataType::Bool(true);
+
+        // todo: continue
+        debug_assert_eq!(Some(Ordering::Less),data_type_a.compare_with(&data_type_b));
+        debug_assert_eq!(Option::None, data_type_c.compare_with(&data_type_a));
     }
 
     #[test]

@@ -3,6 +3,7 @@ use crate::ast::types::FuncType::{OnCreate, OnDelete, OnRead, OnUpdate};
 use std::cmp::Ordering;
 use std::cmp::Ordering::{Less, Equal};
 use crate::ast::types::DataType::{Bool, Null, Real, Int, Text, Symbol};
+use std::fmt::Error;
 
 #[derive(Debug, PartialEq, PartialOrd,Clone)]
 // data types
@@ -115,6 +116,13 @@ impl DataType {
             (DataType::Real(l_val),DataType::Real(r_val)) => l_val.partial_cmp(r_val),
             (DataType::Text(l_val),DataType::Text(r_val)) => l_val.partial_cmp(r_val),
             _ => None
+        }
+    }
+
+    pub fn symbol_to_string(&self) -> core::result::Result<&String,&str> {
+        return match self {
+            DataType::Symbol(val) => { Ok(val) },
+            _ => { Err("DataType convert has been failed") }
         }
     }
 }
@@ -390,6 +398,15 @@ mod test {
     }
 
     #[test]
+    fn test_data_type_symbol_to_string() {
+        let data_type = DataType::Symbol("my_val".to_string());
+        debug_assert_eq!(Ok(&String::from("my_val")), data_type.symbol_to_string());
+
+        let data_type = DataType::Int(64);
+        debug_assert_ne!(Ok(&String::from("my_val")), data_type.symbol_to_string());
+    }
+
+    #[test]
     fn test_data_var_get() -> Result<(),()> {
         let data_var = DataVar("my_var".to_string(),DataType::Real(32.2));
         let (name,value) = data_var.get();
@@ -488,11 +505,5 @@ mod test {
         );
 
         Ok(())
-    }
-
-    #[test]
-    fn test_binary_expr_get() {
-        let binary_expr = BinaryExpr::new(DataType::Symbol("S".to_string()),DataType::Int(32),"==".to_string());
-        println!("{:#?}",binary_expr.get())
     }
 }

@@ -1,13 +1,22 @@
-//! The describe all types for ast.
+//! The describe all types for AST.
+use crate::ast::types::DataType::{Bool, Int, Null, Real, Symbol, Text};
 use crate::ast::types::FuncType::{OnCreate, OnDelete, OnRead, OnUpdate};
 use std::cmp::Ordering;
-use std::cmp::Ordering::{Less, Equal};
-use crate::ast::types::DataType::{Bool, Null, Real, Int, Text, Symbol};
+use std::cmp::Ordering::{Equal, Less};
 use std::fmt::Error;
 
-#[derive(Debug, PartialEq, PartialOrd,Clone)]
+#[derive(Debug, PartialEq, PartialOrd, Clone)]
 // data types
 // example: 23 : int
+/// DataType is atomic-based type for higher order instances
+/// It's represent values for qdb
+/// ```
+/// use crate::qdb_ast::ast::types::DataType;
+/// DataType::Null; // null type
+/// DataType::Int(32); // int
+/// DataType::Bool(true); // bool
+/// // etc.
+/// ```
 pub enum DataType {
     // null value
     Null,
@@ -30,6 +39,12 @@ impl Ord for DataType {
 }
 
 impl DataType {
+    /// Convert string value to T-type value.
+    /// ```
+    /// use qdb_ast::ast::types::DataType;
+    /// let value = DataType::from("32".to_string()).unwrap();
+    /// assert_eq!(32,value);
+    /// ```
     pub fn from<T>(raw_value: String) -> Option<T>
     where
         T: std::fmt::Display + std::str::FromStr,
@@ -38,11 +53,6 @@ impl DataType {
         match result {
             Ok(v) => Some(v),
             Err(_e) => {
-                /* let mes = format!(
-                    "Type converted for value {} as {} is not correctly.",
-                    raw_value,
-                    std::any::type_name::<T>()
-                );*/
                 error!(
                     "Type converted for value {} as {} is not correctly.",
                     raw_value,
@@ -53,6 +63,12 @@ impl DataType {
         }
     }
 
+    /// Similar on 'from' method, but use it for convert string to DataType.
+    /// ```
+    /// use qdb_ast::ast::types::DataType;
+    /// let value = DataType::from_string("32".to_string(),"int".to_string()).unwrap();
+    /// assert_eq!(DataType::Int(32),value);
+    /// ```
     pub fn from_string<T: ToString>(raw_value: T, raw_type: T) -> Option<DataType> {
         use super::types::DataType::*;
         use super::types_annotations::{BOOL, INT, NULL, REAL, SYMBOL, TEXT};
@@ -71,6 +87,12 @@ impl DataType {
         }
     }
 
+    /// Create DataType instance with default value.
+    /// ```
+    /// use qdb_ast::ast::types::DataType;
+    /// let value = DataType::from_type_default_value("int".to_string()).unwrap();
+    /// assert_eq!(DataType::Int(0),value);
+    /// ```
     pub fn from_type_default_value<T: ToString>(raw_type: T) -> Option<DataType> {
         use super::types::DataType::*;
         use super::types_annotations::{BOOL, INT, NULL, REAL, TEXT};
@@ -87,43 +109,94 @@ impl DataType {
         }
     }
 
-    pub fn null() -> DataType {
+    /// Create DataType::Null instance with default value.
+    /// ```
+    /// use qdb_ast::ast::types::DataType;
+    /// let value = DataType::from_null();
+    /// assert_eq!(DataType::Null,value);
+    /// ```
+    pub fn from_null() -> DataType {
         DataType::Null
     }
 
+    /// Create DataType::Bool instance with default value.
+    /// ```
+    /// use qdb_ast::ast::types::DataType;
+    /// let value = DataType::from_bool(true);
+    /// assert_eq!(DataType::Bool(true),value);
+    /// ```
     pub fn from_bool(val: bool) -> DataType {
         DataType::Bool(val)
     }
 
+    /// Create DataType::Int instance with default value.
+    /// ```
+    /// use qdb_ast::ast::types::DataType;
+    /// let value = DataType::from_int(32);
+    /// assert_eq!(DataType::Int(32),value);
+    /// ```
     pub fn from_int(val: i64) -> DataType {
         DataType::Int(val)
     }
 
+    /// Create DataType::Real instance with default value.
+    /// ```
+    /// use qdb_ast::ast::types::DataType;
+    /// let value = DataType::from_real(64.0);
+    /// assert_eq!(DataType::Real(64.0),value);
+    /// ```
     pub fn from_real(val: f64) -> DataType {
         DataType::Real(val)
     }
 
+    /// Create DataType::Text instance with default value.
+    /// ```
+    /// use qdb_ast::ast::types::DataType;
+    /// let value = DataType::from_text("my_text".to_string());
+    /// assert_eq!(DataType::Text("my_text".to_string()),value);
+    /// ```
     pub fn from_text(val: String) -> DataType {
         DataType::Text(val)
     }
 
-    pub fn compare_with(&self,other: &Self) -> Option<Ordering> {
-        let combination = (self,other);
-        return match combination  {
-            (DataType::Null,DataType::Null) => Some(Ordering::Equal),
-            (DataType::Bool(l_val),DataType::Bool(r_val)) => l_val.partial_cmp(r_val),
-            (DataType::Int(l_val),DataType::Int(r_val)) => l_val.partial_cmp(r_val),
-            (DataType::Real(l_val),DataType::Real(r_val)) => l_val.partial_cmp(r_val),
-            (DataType::Text(l_val),DataType::Text(r_val)) => l_val.partial_cmp(r_val),
-            _ => None
-        }
+    /// Compare DataType's.
+    /// Two instance's with diffrent type of value leads to Option::None.
+    /// ```
+    /// use qdb_ast::ast::types::DataType;
+    /// use std::cmp::Ordering::{Equal,Greater};
+    ///
+    /// let value_one = DataType::Int(32);
+    /// let value_two = DataType::Real(32.0);
+    /// assert_eq!(Greater,value_one.compare_with(&DataType::Int(8)).unwrap());
+    /// assert_eq!(None,value_one.compare_with(&value_two));
+    /// ```
+    pub fn compare_with(&self, other: &Self) -> Option<Ordering> {
+        let combination = (self, other);
+        return match combination {
+            (DataType::Null, DataType::Null) => Some(Ordering::Equal),
+            (DataType::Bool(l_val), DataType::Bool(r_val)) => l_val.partial_cmp(r_val),
+            (DataType::Int(l_val), DataType::Int(r_val)) => l_val.partial_cmp(r_val),
+            (DataType::Real(l_val), DataType::Real(r_val)) => l_val.partial_cmp(r_val),
+            (DataType::Text(l_val), DataType::Text(r_val)) => l_val.partial_cmp(r_val),
+            _ => None,
+        };
     }
 
-    pub fn symbol_to_string(&self) -> core::result::Result<&String,&str> {
+    /// Convert DataType::Symbol instance to string.
+    /// ```
+    /// use qdb_ast::ast::types::DataType;
+    /// use std::cmp::Ordering::{Equal,Greater};
+    ///
+    /// let value_one = DataType::Int(32);
+    /// let value_two = DataType::Real(32.0);
+    /// assert_eq!(Greater,value_one.compare_with(&DataType::Int(8)).unwrap());
+    /// assert_eq!(None,value_one.compare_with(&value_two));
+    /// ```
+    pub fn symbol_to_string(&self) -> core::result::Result<&String, &str> {
         return match self {
-            DataType::Symbol(val) => { Ok(val) },
-            _ => { Err("DataType convert has been failed") }
-        }
+            DataType::Symbol(val) => Ok(val),
+            _ => Err("DataType convert has been failed"),
+        };
     }
 }
 
@@ -133,18 +206,40 @@ impl Eq for DataType {
     }
 }
 
-#[derive(Debug,PartialEq,PartialOrd)]
+#[derive(Debug, PartialEq, PartialOrd)]
 // data variable - composition from data types
 // example: <variable name> = 23 : int
+/// DataVar is composition variable name and DataType values, in short:
+/// * name - is variable String name
+/// * value - is DataType value.
+/// It's represent construction as variable.
+/// ```
+/// use qdb_ast::ast::types::{DataVar, DataType};
+/// DataVar::new("my_var".to_string(),DataType::Int(32)); // variable 'my_var' with 32 value of type int
+/// ```
 pub struct DataVar(String, DataType);
 
 impl DataVar {
+    /// Create new runtime varaible.
+    /// ```
+    /// use qdb_ast::ast::types::{DataVar, DataType};
+    /// DataVar::new("my_var".to_string(),DataType::Bool(false)); // variable 'my_var' with false value of type bool
+    /// ```
     pub fn new(var_name: String, data_type: DataType) -> DataVar {
         DataVar(var_name, data_type)
     }
-    pub fn get(&self) -> (&String,&DataType){
-        let DataVar(name,val) = self;
-        (name,val)
+
+    /// Method for destructurization DataVar to components.
+    /// ```
+    /// use qdb_ast::ast::types::{DataVar, DataType};
+    /// let variable = DataVar::new("my_var".to_string(),DataType::Bool(false)); // variable 'my_var' with false value of type bool
+    /// let (name,value) = variable.get();
+    /// assert_eq!(&"my_var".to_string(),name);
+    /// assert_eq!(&DataType::Bool(false),value);
+    /// ```
+    pub fn get(&self) -> (&String, &DataType) {
+        let DataVar(name, val) = self;
+        (name, val)
     }
 }
 
@@ -166,9 +261,15 @@ impl std::fmt::Display for DataVar {
     }
 }
 
-#[derive(Debug, Copy, Clone)]
 // function types, it's can use for Expr struct
 // example: onCreate
+/// Function types. It's can use for detect type for evaluation from String.
+/// ```
+/// use qdb_ast::ast::types::{FuncType};
+/// let func_type = FuncType::from_string("onCreate".to_string());
+/// assert_eq!(FuncType::OnCreate,func_type.unwrap());
+/// ```
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub enum FuncType {
     // onCreate value
     OnCreate,
@@ -181,6 +282,22 @@ pub enum FuncType {
 }
 
 impl FuncType {
+    /// Convert String to FuncType, in other case return Option::None.
+    /// Not case sensitive.
+    /// You can use:
+    /// * "onCreate" - [FuncType::OnCreate](enum.FuncType.html#variant.OnCreate)
+    /// * "onUpdate" - [FuncType::OnUpdate](enum.FuncType.html#variant.OnUpdate)
+    /// * "onRead" - [FuncType::OnRead](enum.FuncType.html#variant.OnRead)
+    /// * "onDelete" - [FuncType::onDelete](enum.FuncType.html#variant.onDelete)
+    /// ```
+    /// use qdb_ast::ast::types::{FuncType};
+    /// let func_type_one = FuncType::from_string("onCreate".to_string());
+    /// let func_type_two = FuncType::from_string("oNrEaD".to_string());
+    /// let func_type_three = FuncType::from_string("ONupdate".to_string());
+    /// assert_eq!(FuncType::OnCreate,func_type_one.unwrap());
+    /// assert_eq!(FuncType::OnRead,func_type_two.unwrap());
+    /// assert_eq!(FuncType::OnUpdate,func_type_three.unwrap());
+    /// ```
     pub fn from_string(func_type: String) -> Option<FuncType> {
         use crate::ast::types_annotations::{ONCREATE, ONDELETE, ONREAD, ONUPDATE};
         let raw_type = func_type.to_string().to_lowercase();
@@ -199,11 +316,26 @@ impl FuncType {
     }
 }
 
-#[derive(Debug)]
 // expressions for execution operation.
 // It's composition from function types and data variable
 // (look enum FuncType and struct DataVar )
 // example: Expr equal to onCreate(a : int, b : bool)
+/// It's can use for create high order function - composition.
+/// It can consits of:
+/// * [FuncType](enum.FuncType.html) (required)
+/// * Channel names - Vec of [DataType::Symbol](enum.DataType.html) (required)
+/// * Binary Expressions - Vec of [BinaryExpr](struct.BinaryExpr.html) (optional)
+/// * Variables - Vec of [DataVar](struct.DataVar.html)(optional)
+/// ```
+/// use qdb_ast::ast::types::{UnaryFuncExpr, FuncType, DataVar, DataType};
+/// UnaryFuncExpr::new(
+/// FuncType::OnCreate,
+/// vec![DataType::Symbol("my_channel".to_string())],
+/// Option::None,
+/// Some(vec![DataVar::new("x".to_string(),DataType::Int(16))])
+/// ); // it's equivalent OnCreate(my_channel)(x : int = 16)
+/// ```
+#[derive(Debug)]
 pub struct UnaryFuncExpr {
     func_type: FuncType,
     channel_names: Vec<DataType>,
@@ -212,6 +344,21 @@ pub struct UnaryFuncExpr {
 }
 
 impl UnaryFuncExpr {
+    /// Method for create [UnaryFuncExpr](struct.UnaryFuncExpr.html) instance.
+    /// It may contain:
+    /// * [FuncType](enum.FuncType.html) (required)
+    /// * Channel names - Vec of [DataType::Symbol](enum.DataType.html) (required)
+    /// * Binary Expressions - Vec of [BinaryExpr](struct.BinaryExpr.html) (optional)
+    /// * Variables - Vec of [DataVar](struct.DataVar.html)(optional)
+    /// ```
+    /// use qdb_ast::ast::types::{UnaryFuncExpr, FuncType, DataVar, DataType};
+    /// UnaryFuncExpr::new(
+    /// FuncType::OnCreate,
+    /// vec![DataType::Symbol("my_channel".to_string())],
+    /// Option::None,
+    /// Some(vec![DataVar::new("x".to_string(),DataType::Int(16))])
+    /// ); // it's equivalent: OnCreate(my_channel)(x : int = 16)
+    /// ```
     pub fn new(
         func_type: FuncType,
         channel_names: Vec<DataType>,
@@ -225,32 +372,104 @@ impl UnaryFuncExpr {
             vars,
         }
     }
+
+    /// To get func type [FuncType](enum.FuncType.html) from UnaryFuncExpr instance
+    /// ```
+    /// use qdb_ast::ast::types::{UnaryFuncExpr, FuncType, DataVar, DataType};
+    /// let unary_func_expr = UnaryFuncExpr::new(
+    /// FuncType::OnCreate,
+    /// vec![DataType::Symbol("my_channel".to_string())],
+    /// Option::None,
+    /// Some(vec![DataVar::new("x".to_string(),DataType::Int(16))])
+    /// ); // it's equivalent: OnCreate(my_channel)(x : int = 16)
+    ///
+    /// assert_eq!(&FuncType::OnCreate,unary_func_expr.get_func_type())
+    /// ```
     pub fn get_func_type(&self) -> &FuncType {
         &self.func_type
     }
+
+    /// To get channel names Vec<[DataType](enum.DataType.html)> from UnaryFuncExpr instance
+    /// ```
+    /// use qdb_ast::ast::types::{UnaryFuncExpr, FuncType, DataVar, DataType};
+    /// let unary_func_expr = UnaryFuncExpr::new(
+    /// FuncType::OnCreate,
+    /// vec![DataType::Symbol("my_channel".to_string())],
+    /// Option::None,
+    /// Some(vec![DataVar::new("x".to_string(),DataType::Int(16))])
+    /// ); // it's equivalent: OnCreate(my_channel)(x : int = 16)
+    ///
+    /// assert_eq!(
+    /// &DataType::Symbol("my_channel".to_string()),
+    /// unary_func_expr.get_channel_names().get(0).unwrap()
+    /// );
+    /// ```
     pub fn get_channel_names(&self) -> &Vec<DataType> {
         &self.channel_names
     }
+
+    /// To get binary expressions Vec<[DataType](enum.DataType.html)> from UnaryFuncExpr instance
+    /// ```
+    /// use qdb_ast::ast::types::{UnaryFuncExpr, FuncType, DataVar, DataType, BinaryExpr};
+    /// let unary_func_expr = UnaryFuncExpr::new(
+    /// FuncType::OnRead,
+    /// vec![DataType::Symbol("my_channel".to_string())],
+    /// Some(vec![BinaryExpr::new(DataType::Symbol("x".to_string()), DataType::Int(8),">=".to_string())]),
+    /// None
+    /// ); // it's equivalent: OnRead(my_channel)(x: int >= 8)
+    ///
+    /// assert_eq!(
+    /// &BinaryExpr::new(DataType::Symbol("x".to_string()), DataType::Int(8),">=".to_string()),
+    /// unary_func_expr.get_binary_exprs().as_ref().unwrap().get(0).unwrap()
+    /// );
+    /// ```
     pub fn get_binary_exprs(&self) -> &Option<Vec<BinaryExpr>> {
         &self.binary_exprs
     }
+
+    /// To get variables Vec<[DataVar](struct.DataType.html)> from UnaryFuncExpr instance
+    /// ```
+    /// use qdb_ast::ast::types::{UnaryFuncExpr, FuncType, DataVar, DataType};
+    /// let unary_func_expr = UnaryFuncExpr::new(
+    /// FuncType::OnCreate,
+    /// vec![DataType::Symbol("my_channel".to_string())],
+    /// Option::None,
+    /// Some(vec![DataVar::new("x".to_string(),DataType::Int(16))])
+    /// ); // it's equivalent: OnCreate(my_channel)(x : int = 16)
+    ///
+    /// assert_eq!(
+    /// &DataVar::new("x".to_string(),DataType::Int(16)),
+    /// unary_func_expr.get_vars().as_ref().unwrap().get(0).unwrap()
+    /// );
+    /// ```
     pub fn get_vars(&self) -> &Option<Vec<DataVar>> {
         &self.vars
     }
 }
 
+/// It's can use for detect a argument group for your (expr) expression
 #[derive(Debug, PartialOrd, PartialEq)]
 pub enum ArgumentGroup {
     FuncGroup(String),
-    /* unused: */
-    //ChannelsGroup(String),
-    //ExpressionsGroup(String),
-    //StatementsGroup(String),
     OtherGroup(String),
     None,
 }
 
 impl ArgumentGroup {
+    /// Convert string to [ArgumentGroup](enum.ArgumentGroup.html).
+    /// ```
+    /// use qdb_ast::ast::types::ArgumentGroup;
+    ///
+    /// assert_eq!(
+    /// ArgumentGroup::FuncGroup("oncreate".to_string()),
+    /// ArgumentGroup::from_string(&"onCreate".to_string())
+    /// );
+    ///
+    /// assert_eq!(
+    /// ArgumentGroup::OtherGroup("other_group".to_string()),
+    /// ArgumentGroup::from_string(&"other_Group".to_string())
+    /// );
+    /// ```
     pub fn from_string(val: &String) -> ArgumentGroup {
         use crate::ast::types_annotations::{ONCREATE, ONDELETE, ONREAD, ONUPDATE};
         let val = val.to_lowercase();
@@ -287,18 +506,18 @@ impl std::fmt::Display for UnaryFuncExpr {
     }
 }
 
-#[derive(Debug,Clone)]
+
 // expressions for left-hand and right-hand data types
+/// It's represent logic comparison for between two [DataType](enum.DataType.html).
+/// ```
+/// use qdb_ast::ast::types::{BinaryExpr, DataType};
+/// let condition = BinaryExpr::new(DataType::Int(32),DataType::Int(16),">=".to_string());
+/// assert_eq!(true,condition.compare().unwrap());
+/// ```
+#[derive(Debug, Clone,PartialEq)]
 pub struct BinaryExpr(DataType, DataType, String);
 
 impl BinaryExpr {
-    pub fn new(lterm: DataType, rterm: DataType, operator: String) -> BinaryExpr {
-        BinaryExpr(lterm, rterm, operator)
-    }
-
-    pub fn get(&self) -> (&DataType,&DataType,&str) {
-        return (&self.0,&self.1,&self.2)
-    }
 
     fn eq(&self) -> bool {
         self.0 == self.1
@@ -317,9 +536,43 @@ impl BinaryExpr {
     }
     fn lt(&self) -> bool {
         self.0 < self.1
-    }
-    // todo: add AND and OR operators
+    } // todo: add AND and OR operators
 
+    // public functions
+
+    /// Create new [BinaryExpr](struct.BinaryExpr.html) instance.
+    /// ```
+    /// use qdb_ast::ast::types::{BinaryExpr, DataType};
+    /// BinaryExpr::new(DataType::Int(32),DataType::Int(16),">=".to_string());
+    /// ```
+    pub fn new(lterm: DataType, rterm: DataType, operator: String) -> BinaryExpr {
+        BinaryExpr(lterm, rterm, operator)
+    }
+
+    /// Method for destructurization [BinaryExpr](struct.BinaryExpr.html) to components.
+    /// ```
+    /// use qdb_ast::ast::types::{BinaryExpr, DataType};
+    ///
+    /// let binary_expr = BinaryExpr::new(DataType::Int(32),DataType::Int(16),">=".to_string());
+    /// let (left_data_type,right_data_type,operator) = binary_expr.get();
+    ///
+    /// assert_eq!(&DataType::Int(32),left_data_type);
+    /// assert_eq!(&DataType::Int(16),right_data_type);
+    /// assert_eq!(">=",operator);
+    /// ```
+    pub fn get(&self) -> (&DataType, &DataType, &str) {
+        return (&self.0, &self.1, &self.2);
+    }
+
+    /// It's represent logic comparison for between two [DataType](enum.DataType.html).
+    /// ```
+    /// use qdb_ast::ast::types::{BinaryExpr, DataType};
+    /// let condition = BinaryExpr::new(DataType::Int(32),DataType::Int(16),">=".to_string());
+    /// assert_eq!(true,condition.compare().unwrap());
+    ///
+    /// let condition = BinaryExpr::new(DataType::Bool(true),DataType::Int(16),"==".to_string());
+    /// assert_eq!(false,condition.compare().unwrap());
+    /// ```
     pub fn compare(&self) -> Option<bool> {
         match self.2.as_str() {
             "==" => Some(self.eq()),
@@ -375,7 +628,7 @@ mod test {
     fn test_ordering_data_type() {
         let a = DataType::Text("0".to_string());
         let b = DataType::Int(0);
-        println!("{:?}",a.cmp(&b));
+        println!("{:?}", a.cmp(&b));
     }
 
     #[test]
@@ -393,7 +646,7 @@ mod test {
         let data_type_e = DataType::Bool(true);
 
         // todo: continue
-        debug_assert_eq!(Some(Ordering::Less),data_type_a.compare_with(&data_type_b));
+        debug_assert_eq!(Some(Ordering::Less), data_type_a.compare_with(&data_type_b));
         debug_assert_eq!(Option::None, data_type_c.compare_with(&data_type_a));
     }
 
@@ -407,11 +660,11 @@ mod test {
     }
 
     #[test]
-    fn test_data_var_get() -> Result<(),()> {
-        let data_var = DataVar("my_var".to_string(),DataType::Real(32.2));
-        let (name,value) = data_var.get();
-        debug_assert_eq!("my_var",name);
-        debug_assert_eq!(DataType::Real(32.2),*value);
+    fn test_data_var_get() -> Result<(), ()> {
+        let data_var = DataVar("my_var".to_string(), DataType::Real(32.2));
+        let (name, value) = data_var.get();
+        debug_assert_eq!("my_var", name);
+        debug_assert_eq!(DataType::Real(32.2), *value);
         Ok(())
     }
 

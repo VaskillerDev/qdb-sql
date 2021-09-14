@@ -4,7 +4,7 @@ pub struct Util;
 impl Util {
     /// Detect one word in string.
     /// ```
-    /// use qdb_ast::ast::util::*;
+    /// use qdb_ast::__ast::util::*;
     /// assert_eq!(true,Util::is_single_word("myVar".to_string()));
     /// assert_eq!(false,Util::is_single_word("it's not var".to_string()));
     /// assert_eq!(false,Util::is_single_word("1var".to_string()));
@@ -27,11 +27,11 @@ impl Util {
 
     /// Identify type from string value
     /// ```
-    /// use qdb_ast::ast::util::*;
+    /// use qdb_ast::__ast::util::*;
     /// assert_eq!("int".to_string(),Util::identify_type(&"32".to_string()))
     /// ```
     pub fn identify_type(term: &String) -> String {
-        use crate::ast::types_annotations::{BOOL, INT, NULL, REAL, SYMBOL, TEXT};
+        use crate::__ast::types_annotations::{BOOL, INT, NULL, REAL, SYMBOL, TEXT};
 
         let term = term.chars().collect::<Vec<char>>();
 

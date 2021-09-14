@@ -1,6 +1,6 @@
 //|>use crate::environment::logger::Logger;
-use crate::ast::types::{ArgumentGroup, BinaryExpr, DataType, DataVar, FuncType, UnaryFuncExpr};
-use crate::ast::util::Util;
+use crate::__ast::types::{ArgumentGroup, BinaryExpr, DataType, DataVar, FuncType, UnaryFuncExpr};
+use crate::__ast::util::Util;
 use std::str::from_utf8;
 
 // rule for parse  DSL-line from string
@@ -286,7 +286,7 @@ pub struct DefaultParser;
 impl DefaultParser {
     /// Parse raw string as AST-tree with callback
     /// ```
-    /// use crate::qdb_ast::parser::states::DefaultParser;
+    /// use crate::qdb_ast::__parser::states::DefaultParser;
     ///
     /// DefaultParser::parse_from_string_callback("onUpdate(my_channel)(a >= 2)(a : int, b : text)",|elem| elem);
     /// ```
@@ -299,26 +299,26 @@ impl DefaultParser {
     ) -> Vec<UnaryFuncExpr> {
         let line: String = line.into();
         let result: Vec<UnaryFuncExpr> =
-            DefaultParser::from_unary_func_expr::<String>(line).expect("parser error");
+            DefaultParser::from_unary_func_expr::<String>(line).expect("__parser error");
         closure(result)
     }
 
     /// Parse raw string as AST-tree and implement as UnaryFuncExpr
     /// ```
-    /// use crate::qdb_ast::parser::states::DefaultParser;
+    /// use crate::qdb_ast::__parser::states::DefaultParser;
     ///
     /// let query = String::from("onUpdate(my_channel)(a >= 2)(a : int, b : text)");
     /// DefaultParser::parse_from_string(query);
     /// ```
     pub fn parse_from_string(line: String) -> Vec<UnaryFuncExpr> {
         let line: String = line.into();
-        Self::from_unary_func_expr(line).expect("parser from string error")
+        Self::from_unary_func_expr(line).expect("__parser from string error")
     }
 }
 impl Parser for DefaultParser {}
 mod test {
 
-    use crate::parser::states::{DefaultParser, Parser, Rule};
+    use crate::__parser::states::{DefaultParser, Parser, Rule};
     // todo: add more tests
 
     #[test]
@@ -344,9 +344,9 @@ mod test {
     #[test]
     // proof of concept
     fn test_from_unary_func_expr() -> Result<(), ()> {
-        use crate::ast::types::DataType::Symbol;
-        use crate::ast::types::{BinaryExpr, DataType, FuncType, UnaryFuncExpr};
-        use crate::parser::states::{DefaultParser, Parser, Rule};
+        use crate::__ast::types::DataType::Symbol;
+        use crate::__ast::types::{BinaryExpr, DataType, FuncType, UnaryFuncExpr};
+        use crate::__parser::states::{DefaultParser, Parser, Rule};
         debug_assert_eq!(
             true,
             matches!(DefaultParser::from_unary_func_expr(" "), None)

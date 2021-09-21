@@ -1,14 +1,16 @@
 use std::rc::Rc;
 
 /// AST-node impl
+#[derive(Clone)]
 pub struct AstNode {
-    name: String,
+    pub name: String,
     children: Vec<AstNode>,
     parent: Box<Option<AstNode>>
 }
 
 impl AstNode {
     pub fn new(name: String) -> Self {
+        let name = name.to_lowercase();
         return AstNode {
             name,
             children: vec![],

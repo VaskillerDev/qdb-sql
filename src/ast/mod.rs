@@ -1,11 +1,8 @@
 mod ast_node;
 mod parser;
-mod select;
-mod result_column;
-mod expr;
-mod literal_value;
-mod symbol_type;
-mod filter_clause;
+mod select_stmt;
+mod rules;
+mod reserved_word;
 
 use std::ops::DerefMut;
 use std::rc::Rc;

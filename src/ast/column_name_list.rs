@@ -1,0 +1,1 @@
+pub type ColumnNameList = Vec<dyn From<str>>;

@@ -1,5 +1,4 @@
 use std::rc::Rc;
-use std::borrow::Borrow;
 
 /// AST-node impl
 #[derive(Clone)]
@@ -37,16 +36,36 @@ impl AstNode {
         None
     }
 
-    pub fn search_range_by_name(&self, start_name : &str, end_name : &str) -> Option<AstNode> {
-        /*let fsn = Rc::new(|node : &AstNode| node.name == start_name);
-        let esn = Rc::new(|node : &AstNode| node.name == end_name);
+    pub fn search_mut(&self, mut lambda: Rc<dyn FnMut(&Self) -> bool>) -> Option<AstNode> {
+        if lambda(self) {
+            return Some(self.clone());
+        }
 
-        let start_node_opt = self.search(fsn);
-        let end_node_opt = self.search(esn);
+        for node in self.children.iter() {
+            return node.search_mut(Rc::clone( &lambda));
+        };
 
-        if start_node_opt.is_none() || end_node_opt.is_none() {
-            return None;
-        }*/
+        None
+    }
+
+    pub fn search_range_by_name(&mut self, start_name : &str, end_name : &str) -> Option<AstNode> {
+
+        let mut isn = 0;
+        let mut ien = 0;
+        {
+            let fsn = Rc::new(|node : &AstNode| {node.name == start_name });
+            let esn = Rc::new(|node : &AstNode| {node.name == end_name });
+            let start_node_opt = self.search_mut(fsn);
+            let end_node_opt = self.search_mut(esn);
+        }
+
+
+
+       /* if start_node_opt.is_none() || end_node_opt.is_none() {
+           return None
+        }
+        println!("{}", isn);
+        println!("{}", ien);*/
 
         None
     }
@@ -72,8 +91,8 @@ fn node_add_node() {
 /// Searching node in node
 #[test]
 fn search_node() {
-    let mut node = AstNode::new(String::from("one"));
-    let mut node2 = AstNode::new(String::from("two"));
+    let mut node = AstNode::from("one");
+    let mut node2 = AstNode::from("two");
 
     node.add(node2.clone());
 
@@ -83,6 +102,19 @@ fn search_node() {
 
     let node_opt = node.search(Rc::new(filter));
     assert_eq!(node_opt.unwrap().name, node2.name);
+}
+
+#[test]
+fn search_node_by_range() {
+    let mut update_node = AstNode::new(String::from("UPDATE"));
+    let mut lp_node = AstNode::new(String::from("("));
+    let mut rp_node = AstNode::new(String::from(")"));
+
+    update_node
+        .add(lp_node)
+        .add(rp_node);
+
+    update_node.search_range_by_name("(", ")");
 }
 
 mod test {

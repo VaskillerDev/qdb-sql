@@ -1,1 +1,3 @@
-pub type ColumnNameList = Vec<dyn From<str>>;
+pub type ColumnNameList <T>
+    where T : Into<String> + Sized
+= Vec<T>;

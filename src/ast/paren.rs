@@ -1,5 +1,5 @@
 
-pub type LParen = str;
-pub type RParen = str;
+pub type LParen = String;
+pub type RParen = String;
 pub const LPAREN: &str = "(";
 pub const RPAREN: &str = ")";

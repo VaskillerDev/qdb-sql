@@ -1,5 +1,4 @@
 use crate::ast::ast_node::AstNode;
-use crate::ast::select_stmt::translate_to_select_statement;
 
 pub struct Parser<TSource>
     where TSource : Into<String>
@@ -41,7 +40,7 @@ impl<TSource> Parser<TSource>
         let root_name: &str = &root.name;
 
         match root_name {
-            "select" => translate_to_select_statement(vec_ast_nodes),
+            "select" => {}
             _ => {}
         }
     }

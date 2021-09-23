@@ -38,7 +38,15 @@ impl AstNode {
     }
 
     pub fn search_range_by_name(&self, start_name : &str, end_name : &str) -> Option<AstNode> {
-        // todo: continue
+        /*let fsn = Rc::new(|node : &AstNode| node.name == start_name);
+        let esn = Rc::new(|node : &AstNode| node.name == end_name);
+
+        let start_node_opt = self.search(fsn);
+        let end_node_opt = self.search(esn);
+
+        if start_node_opt.is_none() || end_node_opt.is_none() {
+            return None;
+        }*/
 
         None
     }

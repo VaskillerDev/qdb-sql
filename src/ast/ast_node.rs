@@ -1,4 +1,5 @@
 use std::rc::Rc;
+use std::borrow::Borrow;
 
 /// AST-node impl
 #[derive(Clone)]
@@ -7,6 +8,8 @@ pub struct AstNode {
     children: Vec<AstNode>,
     parent: Box<Option<AstNode>>
 }
+
+type THeapFnMut<'a, T> = Box<dyn 'a + FnMut(&T) -> bool>;
 
 impl AstNode {
     pub fn new(name: String) -> Self {
@@ -36,13 +39,14 @@ impl AstNode {
         None
     }
 
-    pub fn search_mut(&self, mut lambda: Rc<dyn FnMut(&Self) -> bool>) -> Option<AstNode> {
+
+    pub fn search_mut<'a>(&self, mut lambda: Box<dyn 'a + FnMut(&Self) -> bool>) -> Option<AstNode> {
         if lambda(self) {
             return Some(self.clone());
         }
 
         for node in self.children.iter() {
-            return node.search_mut(Rc::clone( &lambda));
+            return node.search_mut(*Box::from(lambda));
         };
 
         None
@@ -53,8 +57,11 @@ impl AstNode {
         let mut isn = 0;
         let mut ien = 0;
         {
-            let fsn = Rc::new(|node : &AstNode| {node.name == start_name });
-            let esn = Rc::new(|node : &AstNode| {node.name == end_name });
+            let fsn = Box::new(|node : &AstNode| {
+                isn +=1;
+                node.name == start_name
+            });
+            let esn = Box::new(|node : &AstNode| {ien+=1; node.name == end_name });
             let start_node_opt = self.search_mut(fsn);
             let end_node_opt = self.search_mut(esn);
         }

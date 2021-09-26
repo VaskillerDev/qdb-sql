@@ -40,13 +40,14 @@ impl AstNode {
     }
 
 
-    pub fn search_mut<'a>(&self, mut lambda: Box<dyn 'a + FnMut(&Self) -> bool>) -> Option<AstNode> {
+    pub fn search_mut<'a>(&self,
+                          lambda: &mut dyn FnMut(&AstNode) -> bool) -> Option<AstNode> {
         if lambda(self) {
             return Some(self.clone());
         }
 
         for node in self.children.iter() {
-            return node.search_mut(*Box::from(lambda));
+            node.search_mut(lambda);
         };
 
         None
@@ -54,16 +55,19 @@ impl AstNode {
 
     pub fn search_range_by_name(&mut self, start_name : &str, end_name : &str) -> Option<AstNode> {
 
-        let mut isn = 0;
-        let mut ien = 0;
+        let mut isn = -1;
+        let mut ien = -1;
         {
-            let fsn = Box::new(|node : &AstNode| {
+            let mut fsn = |node : &AstNode| {
                 isn +=1;
                 node.name == start_name
-            });
-            let esn = Box::new(|node : &AstNode| {ien+=1; node.name == end_name });
-            let start_node_opt = self.search_mut(fsn);
-            let end_node_opt = self.search_mut(esn);
+            };
+            let mut esn = |node : &AstNode| {
+                ien+=1;
+                node.name == end_name
+            };
+            let start_node_opt = self.search_mut(&mut fsn);
+            let end_node_opt = self.search_mut(&mut esn);
         }
 
 

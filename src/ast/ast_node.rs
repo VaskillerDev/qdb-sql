@@ -47,7 +47,10 @@ impl AstNode {
         }
 
         for node in self.children.iter() {
-            node.search_mut(lambda);
+            let s_node = node.search_mut(lambda);
+            if s_node.is_some() {
+                return s_node;
+            }
         };
 
         None

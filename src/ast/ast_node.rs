@@ -2,11 +2,9 @@ use std::rc::Rc;
 use std::borrow::Borrow;
 
 /// AST-node impl
-#[derive(Clone)]
 pub struct AstNode {
     pub name: String,
-    children: Vec<AstNode>,
-    parent: Box<Option<AstNode>>
+    children: Vec<AstNode>
 }
 
 type THeapFnMut<'a, T> = Box<dyn 'a + FnMut(&T) -> bool>;
@@ -16,12 +14,11 @@ impl AstNode {
         let name = name.to_lowercase();
         return AstNode {
             name,
-            children: vec![],
-            parent: Box::new(Option::None)
+            children: vec![]
         };
     }
 
-    pub fn add(&mut self, node: AstNode) -> &mut Self {
+    pub fn add(&mut self, mut node: AstNode) -> &mut Self {
         let vector = &mut self.children;
         vector.push(node);
         self
@@ -93,15 +90,17 @@ impl AstNode {
             return None
         }
 
-
-
-       /* if start_node_opt.is_none() || end_node_opt.is_none() {
-           return None
-        }
-        println!("{}", isn);
-        println!("{}", ien);*/
-
         None
+    }
+}
+
+impl Clone for AstNode {
+    fn clone(&self) -> Self {
+        
+        AstNode {
+            name: self.name.clone(),
+            children: self.children.clone()
+        }
     }
 }
 
@@ -142,14 +141,19 @@ fn search_node() {
 fn search_node_by_range() {
     let mut update_node = AstNode::new(String::from("UPDATE"));
     let mut lp_node = AstNode::new(String::from("("));
+    let mut mm_node = AstNode::new(String::from("AN"));
     let mut m_node = AstNode::new(String::from("ANYWAY"));
     let mut rp_node = AstNode::new(String::from(")"));
+
+    lp_node.add(mm_node);
 
     update_node
         .add(lp_node)
         .add(m_node)
         .add(rp_node);
 
+    let nodes = update_node.search_range_by_name("(", ")");
+    let a = 2+2;
 }
 
 mod test {

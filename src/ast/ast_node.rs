@@ -56,10 +56,11 @@ impl AstNode {
         None
     }
 
-    pub fn search_range_by_name(&mut self, start_name : &str, end_name : &str) -> Option<AstNode> {
+    pub fn search_range_by_name(&mut self, start_name : &str, end_name : &str) -> Option<Vec<AstNode>> {
 
-        let mut isn = -1;
-        let mut ien = -1;
+        let mut isn = -1; // start
+        let mut ien = -1; // end
+        let mut icn = -1; // current
         {
             let mut fsn = |node : &AstNode| {
                 isn +=1;
@@ -71,6 +72,25 @@ impl AstNode {
             };
             let start_node_opt = self.search_mut(&mut fsn);
             let end_node_opt = self.search_mut(&mut esn);
+
+            let is_borders_node_exist = start_node_opt.is_some() && end_node_opt.is_some();
+            if is_borders_node_exist {
+
+                let mut collected_nodes_vec : Vec<AstNode> = Vec::new();
+
+                let mut collect_nodes = |node : &AstNode| {
+                    icn +=1;
+
+                    if icn > isn && icn < ien {
+                        collected_nodes_vec.push(node.clone())
+                    };
+                    false
+                };
+
+                self.search_mut(&mut collect_nodes);
+                return Some(collected_nodes_vec)
+            }
+            return None
         }
 
 
@@ -122,13 +142,14 @@ fn search_node() {
 fn search_node_by_range() {
     let mut update_node = AstNode::new(String::from("UPDATE"));
     let mut lp_node = AstNode::new(String::from("("));
+    let mut m_node = AstNode::new(String::from("ANYWAY"));
     let mut rp_node = AstNode::new(String::from(")"));
 
     update_node
         .add(lp_node)
+        .add(m_node)
         .add(rp_node);
 
-    update_node.search_range_by_name("(", ")");
 }
 
 mod test {

@@ -31,26 +31,32 @@ pub mod action {
         };
     }
 
-    pub fn as_update_exp(node: AstNode) {
-        let flp = Rc::new(|n: &AstNode| n.name.as_str() == LPAREN);
-        let frp = Rc::new(|n: &AstNode| n.name.as_str() == RPAREN);
+    /// Creation Action
+    /// from KEYWORD [LParen]  [RParen]
+    pub fn as_update_exp(mut node: AstNode) -> Option<Vec<AstNode>> {
+        let searched_nodes = node
+            .search_range_by_name(LPAREN,RPAREN)
+            .unwrap();
 
-        let lp_node = node.search(flp).unwrap();
+        Some(searched_nodes)
+    }
 
-        //lp_node.search();
+    pub fn extract_names_by_symbol(mut node : AstNode) {
 
-        let a = 2+2;
     }
 }
 
 #[test]
 fn test_update_exp() {
     let mut update_node = AstNode::from("UPDATE");
-    let lp_node = AstNode::from("(");
+    let mut lp_node = AstNode::from("(");
     let rp_node = AstNode::from(")");
+
+    lp_node.add(AstNode::from("bob"));
 
     update_node.add(lp_node);
     update_node.add(rp_node);
 
-    as_update_exp(update_node);
+    let nodes = as_update_exp(update_node);
+    let a = 2+2;
 }

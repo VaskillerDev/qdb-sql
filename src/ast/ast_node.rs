@@ -24,13 +24,13 @@ impl AstNode {
         self
     }
 
-    pub fn search(&self, lambda: Rc<dyn Fn(&Self) -> bool>) -> Option<AstNode> {
+    pub fn search(&self, lambda:& dyn Fn(&Self) -> bool) -> Option<AstNode> {
         if lambda(self) {
             return Some(self.clone());
         }
 
         for node in self.children.iter() {
-            let s_node = node.search(Rc::clone(&lambda));
+            let s_node = node.search(&lambda);
             if s_node.is_some() {
                 return s_node;
             }
@@ -81,7 +81,7 @@ impl AstNode {
             let mut collect_nodes = |node : &AstNode| {
                 icn +=1;
 
-                if icn > isn && icn < ien {
+                if icn >= isn && icn <= ien {
                     collected_nodes_vec.push(node.clone())
                 };
                 false
@@ -91,7 +91,6 @@ impl AstNode {
             return Some(collected_nodes_vec)
         }
         return None
-
     }
 }
 
@@ -134,7 +133,7 @@ fn search_node() {
         return node.name == String::from("two");
     };
 
-    let node_opt = node.search(Rc::new(filter));
+    let node_opt = node.search(&filter);
     assert_eq!(node_opt.unwrap().name, node2.name);
 }
 
@@ -153,8 +152,30 @@ fn search_node_by_range() {
         .add(m_node)
         .add(rp_node);
 
+    let nodes = update_node.search_range_by_name("(", ")").unwrap();
+
+    let nodes = nodes.as_slice();
+    assert_eq!(nodes[0].name, "(");
+    assert_eq!(nodes[1].name, "an");
+    assert_eq!(nodes[2].name, "anyway");
+    assert_eq!(nodes[3].name, ")");
+}
+
+#[test]
+fn invalid_search_node_by_range() {
+    let mut update_node = AstNode::new(String::from("UPDATE"));
+    let mut lp_node = AstNode::new(String::from("("));
+    let mut mm_node = AstNode::new(String::from("AN"));
+    let mut m_node = AstNode::new(String::from("ANYWAY"));
+
+    lp_node.add(mm_node);
+
+    update_node
+        .add(lp_node)
+        .add(m_node);
+
     let nodes = update_node.search_range_by_name("(", ")");
-    let a = 2+2;
+    assert_eq!(nodes.is_none(), true);
 }
 
 mod test {

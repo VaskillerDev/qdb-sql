@@ -30,7 +30,10 @@ impl AstNode {
         }
 
         for node in self.children.iter() {
-            return node.search(Rc::clone(&lambda));
+            let s_node = node.search(Rc::clone(&lambda));
+            if s_node.is_some() {
+                return s_node;
+            }
         };
 
         None
@@ -58,39 +61,37 @@ impl AstNode {
         let mut isn = -1; // start
         let mut ien = -1; // end
         let mut icn = -1; // current
-        {
-            let mut fsn = |node : &AstNode| {
-                isn +=1;
-                node.name == start_name
-            };
-            let mut esn = |node : &AstNode| {
-                ien+=1;
-                node.name == end_name
-            };
-            let start_node_opt = self.search_mut(&mut fsn);
-            let end_node_opt = self.search_mut(&mut esn);
 
-            let is_borders_node_exist = start_node_opt.is_some() && end_node_opt.is_some();
-            if is_borders_node_exist {
+        let mut fsn = |node : &AstNode| {
+            isn +=1;
+            node.name == start_name
+        };
+        let mut esn = |node : &AstNode| {
+            ien+=1;
+            node.name == end_name
+        };
+        let start_node_opt = self.search_mut(&mut fsn);
+        let end_node_opt = self.search_mut(&mut esn);
 
-                let mut collected_nodes_vec : Vec<AstNode> = Vec::new();
+        let is_borders_node_exist = start_node_opt.is_some() && end_node_opt.is_some();
+        if is_borders_node_exist {
 
-                let mut collect_nodes = |node : &AstNode| {
-                    icn +=1;
+            let mut collected_nodes_vec : Vec<AstNode> = Vec::new();
 
-                    if icn > isn && icn < ien {
-                        collected_nodes_vec.push(node.clone())
-                    };
-                    false
+            let mut collect_nodes = |node : &AstNode| {
+                icn +=1;
+
+                if icn > isn && icn < ien {
+                    collected_nodes_vec.push(node.clone())
                 };
+                false
+            };
 
-                self.search_mut(&mut collect_nodes);
-                return Some(collected_nodes_vec)
-            }
-            return None
+            self.search_mut(&mut collect_nodes);
+            return Some(collected_nodes_vec)
         }
+        return None
 
-        None
     }
 }
 

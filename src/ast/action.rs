@@ -2,8 +2,10 @@ use crate::ast::ast_node::AstNode;
 use crate::ast::column_name_list::ColumnNameList;
 use crate::ast::paren::{LParen, RParen, LPAREN, RPAREN};
 use crate::ast::reserved_word as word;
+use crate::ast::reserved_word::UPDATE;
 use std::rc::Rc;
 
+#[derive(Debug, PartialEq)]
 pub enum Action {
     SELECT,
     DELETE,
@@ -13,28 +15,41 @@ pub enum Action {
     USAGE,
 }
 
-pub fn action_rule(node: AstNode) -> Result<Action, &'static str> {
-    let node_name = node.name.as_str();
+pub fn extract_action_rule_exp(node: AstNode) -> Result<Action, &'static str> {
+    let node_name = node.name.to_uppercase();
+    let node_name = node_name.as_str();
     return match node_name {
         word::SELECT => Ok(Action::SELECT),
         word::DELETE => Ok(Action::DELETE),
         word::USAGE => Ok(Action::USAGE),
-        word::INSERT => {
-            // todo: continue
-            Ok(Action::USAGE)
-        }
-        _ => Err("is node not valid for action rule"),
+        _ => extract_action_exp(node_name, node),
     };
 }
 
 /// Creation Action
 /// from KEYWORD [LParen]  [RParen]
-pub fn extract_action_exp(mut node: AstNode) -> Option<Action> {
+pub fn extract_action_exp(node_name: &str, mut node: AstNode) -> Result<Action, &'static str> {
     let searched_nodes = node.search_range_by_name(LPAREN, RPAREN).unwrap();
-
     let column_name_list = extract_column_name_list(&searched_nodes).unwrap();
 
-    return None;
+    return match node_name {
+        word::INSERT => Ok(Action::INSERT(
+            LPAREN.to_string(),
+            column_name_list,
+            RPAREN.to_string(),
+        )),
+        word::UPDATE => Ok(Action::UPDATE(
+            LPAREN.to_string(),
+            column_name_list,
+            RPAREN.to_string(),
+        )),
+        word::REFERENCES => Ok(Action::REFERENCES(
+            LPAREN.to_string(),
+            column_name_list,
+            RPAREN.to_string(),
+        )),
+        _ => Err("this node is not action expr"),
+    };
 }
 
 pub fn extract_column_name_list(nodes: &Vec<AstNode>) -> Option<ColumnNameList<String>> {
@@ -85,5 +100,16 @@ fn test_update_exp() {
     update_node.add(lp_node);
     update_node.add(rp_node);
 
-    extract_action_exp(update_node);
+    let action = extract_action_rule_exp(update_node).unwrap();
+
+    let expected_column_name_list: ColumnNameList<String> =
+        ["bob".to_string(), "alice".to_string()].to_vec();
+    assert_eq!(
+        Action::UPDATE(
+            LPAREN.to_string(),
+            expected_column_name_list,
+            RPAREN.to_string()
+        ),
+        action
+    );
 }

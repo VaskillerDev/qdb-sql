@@ -1,5 +1,5 @@
-use crate::ast::action::action::Action;
-use crate::ast::set_quantifier::SetQuantifier;
+use crate::ast::action::Action;
 use crate::ast::select_list::SelectList;
+use crate::ast::set_quantifier::SetQuantifier;
 
-type SelectStatementSingleRow = (Action, Vec<SetQuantifier>, SelectList );
+type SelectStatementSingleRow = (Action, Vec<SetQuantifier>, SelectList);

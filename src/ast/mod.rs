@@ -1,15 +1,13 @@
 mod ast_node;
 mod parser;
 
-mod reserved_word;
 mod action;
-mod paren;
 mod column_name_list;
-mod set_quantifier;
+mod paren;
+mod reserved_word;
 mod select_list;
 mod select_statement_single_row;
-
+mod set_quantifier;
 
 use std::ops::DerefMut;
 use std::rc::Rc;
-

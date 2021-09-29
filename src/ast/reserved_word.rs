@@ -1,6 +1,5 @@
 // Database Language SQL (SQL-92)
 
-
 // A
 pub const ABSOLUTE: &str = "ABSOLUTE";
 pub const ACTION: &str = "ACTION";

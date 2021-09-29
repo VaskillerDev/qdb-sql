@@ -1,10 +1,10 @@
-use std::rc::Rc;
 use std::borrow::Borrow;
+use std::rc::Rc;
 
 /// AST-node impl
 pub struct AstNode {
     pub name: String,
-    children: Vec<AstNode>
+    children: Vec<AstNode>,
 }
 
 type THeapFnMut<'a, T> = Box<dyn 'a + FnMut(&T) -> bool>;
@@ -14,7 +14,7 @@ impl AstNode {
         let name = name.to_lowercase();
         return AstNode {
             name,
-            children: vec![]
+            children: vec![],
         };
     }
 
@@ -24,7 +24,7 @@ impl AstNode {
         self
     }
 
-    pub fn search(&self, lambda:& dyn Fn(&Self) -> bool) -> Option<AstNode> {
+    pub fn search(&self, lambda: &dyn Fn(&Self) -> bool) -> Option<AstNode> {
         if lambda(self) {
             return Some(self.clone());
         }
@@ -34,14 +34,12 @@ impl AstNode {
             if s_node.is_some() {
                 return s_node;
             }
-        };
+        }
 
         None
     }
 
-
-    pub fn search_mut<'a>(&self,
-                          lambda: &mut dyn FnMut(&AstNode) -> bool) -> Option<AstNode> {
+    pub fn search_mut<'a>(&self, lambda: &mut dyn FnMut(&AstNode) -> bool) -> Option<AstNode> {
         if lambda(self) {
             return Some(self.clone());
         }
@@ -51,23 +49,26 @@ impl AstNode {
             if s_node.is_some() {
                 return s_node;
             }
-        };
+        }
 
         None
     }
 
-    pub fn search_range_by_name(&mut self, start_name : &str, end_name : &str) -> Option<Vec<AstNode>> {
-
+    pub fn search_range_by_name(
+        &mut self,
+        start_name: &str,
+        end_name: &str,
+    ) -> Option<Vec<AstNode>> {
         let mut isn = -1; // start
         let mut ien = -1; // end
         let mut icn = -1; // current
 
-        let mut fsn = |node : &AstNode| {
-            isn +=1;
+        let mut fsn = |node: &AstNode| {
+            isn += 1;
             node.name == start_name
         };
-        let mut esn = |node : &AstNode| {
-            ien+=1;
+        let mut esn = |node: &AstNode| {
+            ien += 1;
             node.name == end_name
         };
         let start_node_opt = self.search_mut(&mut fsn);
@@ -75,11 +76,10 @@ impl AstNode {
 
         let is_borders_node_exist = start_node_opt.is_some() && end_node_opt.is_some();
         if is_borders_node_exist {
+            let mut collected_nodes_vec: Vec<AstNode> = Vec::new();
 
-            let mut collected_nodes_vec : Vec<AstNode> = Vec::new();
-
-            let mut collect_nodes = |node : &AstNode| {
-                icn +=1;
+            let mut collect_nodes = |node: &AstNode| {
+                icn += 1;
 
                 if icn >= isn && icn <= ien {
                     collected_nodes_vec.push(node.clone())
@@ -88,18 +88,17 @@ impl AstNode {
             };
 
             self.search_mut(&mut collect_nodes);
-            return Some(collected_nodes_vec)
+            return Some(collected_nodes_vec);
         }
-        return None
+        return None;
     }
 }
 
 impl Clone for AstNode {
     fn clone(&self) -> Self {
-        
         AstNode {
             name: self.name.clone(),
-            children: self.children.clone()
+            children: self.children.clone(),
         }
     }
 }
@@ -129,7 +128,7 @@ fn search_node() {
 
     node.add(node2.clone());
 
-    let filter = |node : &AstNode| {
+    let filter = |node: &AstNode| {
         return node.name == String::from("two");
     };
 
@@ -147,10 +146,7 @@ fn search_node_by_range() {
 
     lp_node.add(mm_node);
 
-    update_node
-        .add(lp_node)
-        .add(m_node)
-        .add(rp_node);
+    update_node.add(lp_node).add(m_node).add(rp_node);
 
     let nodes = update_node.search_range_by_name("(", ")").unwrap();
 
@@ -170,9 +166,7 @@ fn invalid_search_node_by_range() {
 
     lp_node.add(mm_node);
 
-    update_node
-        .add(lp_node)
-        .add(m_node);
+    update_node.add(lp_node).add(m_node);
 
     let nodes = update_node.search_range_by_name("(", ")");
     assert_eq!(nodes.is_none(), true);

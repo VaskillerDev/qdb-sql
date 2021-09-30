@@ -27,7 +27,7 @@ pub fn extract_action_rule_exp(node: AstNode) -> Result<Action, &'static str> {
 }
 
 /// Creation Action
-/// from KEYWORD [LParen]  [RParen]
+/// from KEYWORD [LParen] [ColumnNameList]  [RParen]
 pub fn extract_action_exp(node_name: &str, mut node: AstNode) -> Result<Action, &'static str> {
     let searched_nodes = node.search_range_by_name(LPAREN, RPAREN).unwrap();
     let column_name_list = extract_column_name_list(&searched_nodes).unwrap();

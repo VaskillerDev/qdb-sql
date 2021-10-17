@@ -16,7 +16,7 @@ pub enum Action {
 }
 
 pub fn extract_action_rule_exp(node: AstNode) -> Result<Action, &'static str> {
-    let node_name = node.name.to_uppercase();
+    let node_name = node.name_uppercase();
     let node_name = node_name.as_str();
     return match node_name {
         word::SELECT => Ok(Action::SELECT),

@@ -1,4 +1,4 @@
-use std::borrow::Borrow;
+use std::borrow::{Borrow, Cow};
 use std::rc::Rc;
 
 /// AST-node impl
@@ -91,6 +91,10 @@ impl AstNode {
             return Some(collected_nodes_vec);
         }
         return None;
+    }
+
+    pub fn name_uppercase(&self) -> String {
+        return self.name.to_uppercase();
     }
 }
 

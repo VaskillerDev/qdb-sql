@@ -19,6 +19,15 @@ impl PartialEq<Self> for OpResult {
     }
 }
 
+impl OpResult {
+    pub fn new(code: ErrCode, text: String) -> Self {
+        OpResult {
+            code,
+            text
+        }
+    }
+}
+
 mod test {
     use crate::err::code::ErrCode;
     use crate::err::result::OpResult;

@@ -18,8 +18,6 @@ pub fn extract_unsigned_numeric_rule_exp(
     return Err("not impl");
 }
 
-pub fn drop_period(numeric: &str) {}
-
 pub enum ExactNumericLiteral {
     U16(ExactNumericLiteralU16),
     U32(ExactNumericLiteralU32),

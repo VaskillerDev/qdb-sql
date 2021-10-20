@@ -1,15 +1,15 @@
-use std::fmt::{Display, Formatter};
 use crate::err::code::ErrCode;
+use std::fmt::{Display, Formatter};
 
 #[derive(Debug)]
 pub struct OpResult {
-    code : ErrCode,
-    text : String
+    code: ErrCode,
+    text: String,
 }
 
 impl Display for OpResult {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        writeln!(f,"{}", self)
+        writeln!(f, "{}", self)
     }
 }
 
@@ -21,10 +21,7 @@ impl PartialEq<Self> for OpResult {
 
 impl OpResult {
     pub fn new(code: ErrCode, text: String) -> Self {
-        OpResult {
-            code,
-            text
-        }
+        OpResult { code, text }
     }
 }
 
@@ -36,7 +33,7 @@ mod test {
     fn display_op_result() {
         let op_res = OpResult {
             code: ErrCode::SuccessfulCompletion,
-            text: String::from("Successful completion")
+            text: String::from("Successful completion"),
         };
 
         println!("{:?}", op_res);
@@ -47,12 +44,12 @@ mod test {
     fn cmp_op_result() {
         let op_res = OpResult {
             code: ErrCode::SuccessfulCompletion,
-            text: String::from("Successful completion")
+            text: String::from("Successful completion"),
         };
 
         let op_res2 = OpResult {
             code: ErrCode::SuccessfulCompletion,
-            text: String::from("Done")
+            text: String::from("Done"),
         };
 
         assert_eq!(op_res, op_res2);
@@ -62,12 +59,12 @@ mod test {
     fn negative_cmp_op_result() {
         let op_res = OpResult {
             code: ErrCode::SuccessfulCompletion,
-            text: String::from("Successful completion")
+            text: String::from("Successful completion"),
         };
 
         let op_res2 = OpResult {
             code: ErrCode::SqlClientUnableToEstablishSqlConnection,
-            text: String::from("Establish connection")
+            text: String::from("Establish connection"),
         };
 
         assert_ne!(op_res, op_res2);

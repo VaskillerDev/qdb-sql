@@ -4,5 +4,6 @@ extern crate log;
 /// (types, notations and etc.).
 pub mod ast;
 mod err;
+mod types;
 
 fn main() {}

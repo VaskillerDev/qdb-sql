@@ -12,7 +12,7 @@ pub fn extract_unsigned_numeric_rule_exp(
     let node_name = node.name_uppercase();
     let node_name = node_name.as_str();
 
-    let maybe_digit =
+    //let maybe_digit =
 
     // todo:
     return Err("not impl");

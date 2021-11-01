@@ -1,5 +1,7 @@
+use std::iter::FromIterator;
 use std::ops::{Add, Deref};
 use std::os::raw::c_char;
+use std::string::FromUtf8Error;
 
 pub type NumericDigit = c_char;
 
@@ -120,7 +122,7 @@ impl IntoIterator for Numeric {
 }
 
 impl Add for Numeric {
-    type Output = i32;
+    type Output = Numeric;
 
     fn add(self, rhs: Self) -> Self::Output {
         // get less and greater vecs
@@ -134,26 +136,39 @@ impl Add for Numeric {
 
         let mut i = 0;
         let mut rem : bool = false;
+        let mut res : String= String::new();
+
         'sum_cycle:
         for g_digit in g_digits.into_iter().rev() {
-            let maybe_l_digit = l_digits.get(i);
+            let ii: i32
+                = l_digits.len() as i32 - 1 - i;
+            let maybe_l_digit
+                = l_digits.get(ii as usize);
 
             if maybe_l_digit.is_some() {
-                let l_digit = maybe_l_digit.unwrap();
-                let mut sum = g_digit + l_digit + (rem as i8);
+
+                let l_digit
+                    = maybe_l_digit.unwrap();
+                let rem_u8 : u8
+                    = if rem {1} else {0};
+                let mut sum : u8
+                    = (*g_digit + *l_digit) as u8 + rem_u8;
+
                 rem = sum > 9;
                 sum = {if rem {sum - 10} else {sum}};
-
-                println!("{:}", sum); // TODO: continue...
+                res = res.to_owned().add(sum.to_string().as_str());
 
             } else {
-                break 'sum_cycle;
+                let rem_u8 :u8
+                    = if rem {1} else {0};
+                let r = (*g_digit as u8 + rem_u8);
+                res = res.to_owned().add(r.to_string().as_str());
+                rem = false;
             }
             i+=1;
         }
-        println!("{:}", i); // TODO: continue...
 
-        return 2;
+        return Numeric::from_str(res.as_str());
     }
 }
 
@@ -190,9 +205,20 @@ fn numeric_iterator_test() {
 }
 
 #[test]
+fn numeric_parse_from_string_test() {
+    let s = String::from("123123");
+    let numeric = Numeric::from(s);
+    println!("{:?}", numeric);
+}
+
+
+
+#[test]
 fn numeric_adding_test() {
+    // 123 + 9 = 132
+    // 123 + 29 = 152
     let numeric = Numeric::from(123);
-    let numeric2 = Numeric::from(9);
+    let numeric2 = Numeric::from(29);
     let res = numeric + numeric2;
-    //println!("{:}", res);
+    println!("{:?}", res);
 }

@@ -136,6 +136,7 @@ impl Add for Numeric {
 
         let mut i = 0;
         let mut rem : bool = false;
+        let mut sum : u8;
         let mut res : String= String::new();
 
         'sum_cycle:
@@ -147,27 +148,23 @@ impl Add for Numeric {
 
             if maybe_l_digit.is_some() {
 
-                let l_digit
-                    = maybe_l_digit.unwrap();
-                let rem_u8 : u8
-                    = if rem {1} else {0};
-                let mut sum : u8
-                    = (*g_digit + *l_digit) as u8 + rem_u8;
-
+                let l_digit = maybe_l_digit.unwrap();
+                let rem_u8 : u8 = if rem {1} else {0};
+                sum = (*g_digit + *l_digit) as u8 + rem_u8;
                 rem = sum > 9;
                 sum = {if rem {sum - 10} else {sum}};
-                res = res.to_owned().add(sum.to_string().as_str());
-
             } else {
-                let rem_u8 :u8
-                    = if rem {1} else {0};
-                let r = (*g_digit as u8 + rem_u8);
-                res = res.to_owned().add(r.to_string().as_str());
+                let rem_u8 :u8 = if rem {1} else {0};
+                sum = (*g_digit as u8 + rem_u8);
                 rem = false;
             }
+
+            res = res.to_owned().add(sum.to_string().as_str());
+
             i+=1;
         }
 
+        res = res.chars().rev().collect();
         return Numeric::from_str(res.as_str());
     }
 }
@@ -217,8 +214,9 @@ fn numeric_parse_from_string_test() {
 fn numeric_adding_test() {
     // 123 + 9 = 132
     // 123 + 29 = 152
-    let numeric = Numeric::from(123);
-    let numeric2 = Numeric::from(29);
+    // 91 + 5001 = 5092
+    let numeric = Numeric::from(5001);
+    let numeric2 = Numeric::from(91);
     let res = numeric + numeric2;
     println!("{:?}", res);
 }

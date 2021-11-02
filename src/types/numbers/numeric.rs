@@ -1,6 +1,8 @@
+use std::fmt::Debug;
 use std::iter::FromIterator;
-use std::ops::{Add, Deref};
+use std::ops::{Add, Deref, Sub};
 use std::os::raw::c_char;
+use std::path::Display;
 use std::string::FromUtf8Error;
 
 pub type NumericDigit = c_char;
@@ -160,12 +162,41 @@ impl Add for Numeric {
             }
 
             res = res.to_owned().add(sum.to_string().as_str());
-
             i+=1;
+        }
+
+        if rem {
+            let rem_u8 :u8 = if rem {1} else {0};
+            res = res.to_owned().add(rem_u8.to_string().as_str());
         }
 
         res = res.chars().rev().collect();
         return Numeric::from_str(res.as_str());
+    }
+}
+
+impl ToString for Numeric {
+    fn to_string(&self) -> String {
+        let mut s = String::new();
+
+        for digit in &self.digits {
+            let digit_str = digit.to_string();
+            s = s.to_owned().add(digit_str.as_str());
+        }
+
+        return s;
+    }
+}
+
+impl Sub for Numeric {
+    type Output = Numeric;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        let l_digits = self.digits.into_iter().rev();
+        let r_digits = rhs.digits.into_iter().rev();
+        // todo: continue
+
+        return Numeric::from(0);
     }
 }
 
@@ -208,15 +239,31 @@ fn numeric_parse_from_string_test() {
     println!("{:?}", numeric);
 }
 
-
+#[test]
+fn to_string_test() {
+    let numeric = Numeric::from("1889");
+    println!("{}", numeric.to_string());
+}
 
 #[test]
 fn numeric_adding_test() {
-    // 123 + 9 = 132
-    // 123 + 29 = 152
-    // 91 + 5001 = 5092
     let numeric = Numeric::from(5001);
     let numeric2 = Numeric::from(91);
     let res = numeric + numeric2;
-    println!("{:?}", res);
+
+    assert_eq!(res.to_string(), String::from("5092"));
+
+    let numeric = Numeric::from(5001);
+    let numeric2 = Numeric::from(5001);
+    let res = numeric + numeric2;
+    assert_eq!(res.to_string(), String::from("10002"));
+}
+
+#[test]
+fn numeric_subtract_test() {
+    let numeric = Numeric::from(10);
+    let numeric2 = Numeric::from(5);
+    let res = numeric - numeric2;
+
+    assert_eq!(res.to_string(), String::from("5"));
 }

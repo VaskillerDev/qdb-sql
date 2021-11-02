@@ -128,13 +128,8 @@ impl Add for Numeric {
 
     fn add(self, rhs: Self) -> Self::Output {
         // get less and greater vecs
-        let (g_digits, l_digits) = {
-            if self.digits.len() >= rhs.digits.len() {
-                (&self.digits, &rhs.digits)
-            } else {
-                (&rhs.digits, &self.digits)
-            }
-        };
+        let (g_digits, l_digits)
+            = ops_choose(&self.digits, &rhs.digits);
 
         let mut i = 0;
         let mut rem : bool = false;
@@ -191,13 +186,36 @@ impl ToString for Numeric {
 impl Sub for Numeric {
     type Output = Numeric;
 
+    // 14 - 7
+
     fn sub(self, rhs: Self) -> Self::Output {
-        let l_digits = self.digits.into_iter().rev();
-        let r_digits = rhs.digits.into_iter().rev();
-        // todo: continue
+        // get less and greater vecs
+        let left_digits = self.digits;
+        let right_digits = rhs.digits;
+
+        let mut i = 0;
+        let mut rem : bool = false;
+        let mut sum : u8;
+        let mut res : String= String::new();
+
+        'sub_cycle:
+        for g_digit in g_digits.into_iter().rev() {
+
+        }
 
         return Numeric::from(0);
     }
+}
+
+fn ops_choose <'a>(l_digits: &'a Vec<NumericDigit>, r_digits: &'a Vec<NumericDigit>)
+    -> (&'a Vec<NumericDigit>, &'a Vec<NumericDigit>) {
+    return {
+        if l_digits.len() >= r_digits.len() {
+            (l_digits, r_digits)
+        } else {
+            (r_digits, l_digits)
+        }
+    };
 }
 
 #[test]
@@ -242,7 +260,8 @@ fn numeric_parse_from_string_test() {
 #[test]
 fn to_string_test() {
     let numeric = Numeric::from("1889");
-    println!("{}", numeric.to_string());
+    assert_eq!(numeric.to_string(), String::from("1889"));
+    println!("to_string_test: {}", numeric.to_string());
 }
 
 #[test]
@@ -265,5 +284,5 @@ fn numeric_subtract_test() {
     let numeric2 = Numeric::from(5);
     let res = numeric - numeric2;
 
-    assert_eq!(res.to_string(), String::from("5"));
+    assert_eq!(res.to_string(), String::from("0"));
 }

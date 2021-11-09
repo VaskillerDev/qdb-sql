@@ -38,8 +38,7 @@ impl Numeric {
         let mut was_factor: bool = false;
         let mut prec: i16 = 0;
 
-        'byte_cycle:
-        for byte in bytes {
+        'byte_cycle: for byte in bytes {
             if *byte == MINUS_CHAR {
                 continue;
             }
@@ -128,40 +127,41 @@ impl Add for Numeric {
 
     fn add(self, rhs: Self) -> Self::Output {
         // get less and greater vecs
-        let (g_digits, l_digits)
-            = ops_choose(&self.digits, &rhs.digits);
+        let (g_digits, l_digits) = ops_choose(&self.digits, &rhs.digits);
 
         let mut i = 0;
-        let mut rem : bool = false;
-        let mut sum : u8;
-        let mut res : String= String::new();
+        let mut rem: bool = false;
+        let mut sum: u8;
+        let mut res: String = String::new();
 
-        'sum_cycle:
-        for g_digit in g_digits.into_iter().rev() {
-            let ii: i32
-                = l_digits.len() as i32 - 1 - i;
-            let maybe_l_digit
-                = l_digits.get(ii as usize);
+        'sum_cycle: for g_digit in g_digits.into_iter().rev() {
+            let ii: i32 = l_digits.len() as i32 - 1 - i;
+            let maybe_l_digit = l_digits.get(ii as usize);
 
             if maybe_l_digit.is_some() {
-
                 let l_digit = maybe_l_digit.unwrap();
-                let rem_u8 : u8 = if rem {1} else {0};
+                let rem_u8: u8 = if rem { 1 } else { 0 };
                 sum = (*g_digit + *l_digit) as u8 + rem_u8;
                 rem = sum > 9;
-                sum = {if rem {sum - 10} else {sum}};
+                sum = {
+                    if rem {
+                        sum - 10
+                    } else {
+                        sum
+                    }
+                };
             } else {
-                let rem_u8 :u8 = if rem {1} else {0};
+                let rem_u8: u8 = if rem { 1 } else { 0 };
                 sum = (*g_digit as u8 + rem_u8);
                 rem = false;
             }
 
             res = res.to_owned().add(sum.to_string().as_str());
-            i+=1;
+            i += 1;
         }
 
         if rem {
-            let rem_u8 :u8 = if rem {1} else {0};
+            let rem_u8: u8 = if rem { 1 } else { 0 };
             res = res.to_owned().add(rem_u8.to_string().as_str());
         }
 
@@ -194,21 +194,23 @@ impl Sub for Numeric {
         let right_digits = rhs.digits;
 
         let mut i = 0;
-        let mut rem : bool = false;
-        let mut sum : u8;
-        let mut res : String= String::new();
+        let mut rem: bool = false;
+        let mut sum: u8;
+        let mut res: String = String::new();
 
-        'sub_cycle:
+        /*        'sub_cycle:
         for g_digit in g_digits.into_iter().rev() {
 
-        }
+        }*/
 
         return Numeric::from(0);
     }
 }
 
-fn ops_choose <'a>(l_digits: &'a Vec<NumericDigit>, r_digits: &'a Vec<NumericDigit>)
-    -> (&'a Vec<NumericDigit>, &'a Vec<NumericDigit>) {
+fn ops_choose<'a>(
+    l_digits: &'a Vec<NumericDigit>,
+    r_digits: &'a Vec<NumericDigit>,
+) -> (&'a Vec<NumericDigit>, &'a Vec<NumericDigit>) {
     return {
         if l_digits.len() >= r_digits.len() {
             (l_digits, r_digits)

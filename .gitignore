@@ -1,3 +1,6 @@
 .idea
 Cargo.lock
 /target
+
+# lalrpop gen
+/src/grm/sql92.rs

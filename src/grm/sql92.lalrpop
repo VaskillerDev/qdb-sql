@@ -2,9 +2,14 @@ use std::str::FromStr;
 
 grammar;
 
+
+pub Expr: i32 = {
+    <l:Num> "+" <r:Num> => l + r,
+};
+
+
 pub Term: i32 = {
     <n:Num> => n,
-    "(" <t:Term> ")" => t,
 };
 
 Num: i32 = r"[0-9]+" => i32::from_str(<>).unwrap();
